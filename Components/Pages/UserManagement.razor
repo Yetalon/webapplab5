@@ -1,0 +1,139 @@
+@page "/UserMan"
+@using webapplab5.Services
+@inject LibraryService LibaryService
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card p-4 mx-auto" style="max-width: 400px;">
+            <h1>Create User</h1>
+            <div class="form-group">
+                <label>UserName</label>
+                <input class="form-control" @bind=userName placeholder="Enter Username">
+            </div>
+            <div class="form-group mt-2">
+                <label>Email</label>
+                <input class="form-control" @bind=email placeholder="Enter Email">
+            </div>
+            <button class="btn btn-primary mt-3 w-100" @onclick=CreateUser>Create User</button>
+            @if(!userCreated) {
+                <p class="text-danger-emphasis">@createMessage</p>
+            }
+            else{
+                <p class="text-success">@createMessage</p>
+            }
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card p-4 mx-auto" style="max-width: 400px;">
+                <h1>Edit User</h1>
+                <div class="form-group">
+                    <label>select user</label>
+                    <select @bind=userID class="form-select">
+                        <option value="0" disabled selected>user</option>
+                        @foreach(var user in LibaryService.users){
+                            <option value=@user.Id>@user.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group mt-2">
+                    <label>New Username</label>
+                    <input class="form-control" @bind=userName placeholder="Enter Username">
+                </div>
+                <div class="form-group mt-2">
+                    <label>New Email</label>
+                    <input class="form-control" @bind=email placeholder="Enter Email">
+                </div>
+                <p class="mt-2">Leave blank for default</p>
+                <button class="btn btn-primary mt-2 w-100" @onclick=EditUser>Edit User</button>
+                @if(!updatedUser) {
+                    <p class="text-danger-emphasis">@updateMessage</p>
+                }
+                else{
+                    <p class="text-success">@updateMessage</p>
+                }
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card p-4 mx-auto" style="max-width: 400px;">
+                <h1>Delete User</h1>
+                <div class="form-group">
+                    <label>select user</label>
+                    <select @bind=userID class="form-select">
+                        <option value="0" disabled selected>user</option>
+                        @foreach(var user in LibaryService.users){
+                            <option value=@user.Id>@user.Name</option>
+                        }
+                    </select>
+                </div>
+                <button class="btn btn-primary mt-3 w-100" @onclick=DeleteUser>Delete User</button>
+                @if(!deleteUser) {
+                    <p class="text-danger-emphasis">@deleteMessage</p>
+                }
+                else{
+                    <p class="text-success">@deleteMessage</p>
+                }
+            </div>
+        </div>
+    </div>
+    @foreach(var user in LibaryService.users){
+        <p>@user.Name - @user.Email</p>
+    }
+</div>
+
+@code {
+    public string userName {get; set;}
+    public string email {get; set;}
+    public string createMessage {get; set;}
+    public string updateMessage {get; set;}
+    public string deleteMessage {get; set;}
+    public bool userCreated {get; set;}
+    public bool updatedUser {get; set;}
+    public bool deleteUser {get; set;}
+    public int userID {get; set;} = 0;
+    protected override async Task OnInitializedAsync() {
+        await LibaryService.ReadUsers();
+        StateHasChanged();
+    }
+    public async Task CreateUser() {
+        if(string.IsNullOrEmpty(userName) || string.IsNullOrEmpty(email)) {
+            createMessage = "Error: one or more fields are empty";
+            userCreated = false;
+            return;
+        }
+        userCreated = await LibaryService.AddUser(userName, email);
+        createMessage = userCreated ? "User successfully created" : "Error: cannot create user";
+        userName = "";
+        email = "";
+    }
+    public async Task EditUser() {
+        if(userID == 0) {
+            updatedUser = false;
+            updateMessage = "Invalid user id";
+            return;
+        }
+        if(string.IsNullOrEmpty(userName)) {
+            Models.User User = LibaryService.users.FirstOrDefault(u => u.Id == userID);
+            userName = User.Name;
+        }
+        if(string.IsNullOrEmpty(email)) {
+            Models.User User = LibaryService.users.FirstOrDefault(u => u.Id == userID);
+            email = User.Email;
+        }
+        updatedUser = await LibaryService.EditUser(userID, userName, email);
+        updateMessage = updatedUser ? "User updated successfully" : "Error: cannot update user";
+        userName = "";
+        email = "";
+        userID = 0;
+    }
+    public async Task DeleteUser() {
+        if(userID == 0) {
+            deleteUser = false;
+            deleteMessage = "Please select a user";
+            return;
+        }
+        deleteUser = await LibaryService.DeleteUser(userID);
+        deleteMessage = deleteUser ? "User deleted successfully" : "Error: could not delete user";
+        userID = 0;
+    }
+}

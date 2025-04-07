@@ -1,0 +1,154 @@
+@page "/BookMan"
+@using webapplab5.Models
+@using webapplab5.Services
+@inject LibraryService LibaryService
+<div class="row">
+    <div class="col-md-12">
+        <div class="card p-4 mx-auto" style="max-width: 400px;">
+            <h1>Add Book</h1>
+            <div class="form-group">
+                <label>Title</label>
+                <input class="form-control" @bind=bookName placeholder="Enter bookname">
+            </div>
+            <div class="form-group mt-2">
+                <label>Author</label>
+                <input class="form-control" @bind=author placeholder="Enter Email">
+            </div>
+            <div class="form-group mt-2">
+                <label>ISBN</label>
+                <input class="form-control" @bind=isbn placeholder="Enter Email">
+            </div>
+            <button class="btn btn-primary mt-3 w-100" @onclick=CreateBook>Create book</button>
+            @if(!bookCreated) {
+                <p class="text-danger-emphasis">@createMessage</p>
+            }
+            else{
+                <p class="text-success">@createMessage</p>
+            }
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card p-4 mx-auto" style="max-width: 400px;">
+                <h1>Edit Book</h1>
+                <div class="form-group">
+                    <label>Select Book</label>
+                    <select @bind=bookID class="form-select">
+                        <option value="0" disabled selected>Book</option>
+                        @foreach(var book in LibaryService.books){
+                            <option value=@book.Id>@book.Title</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group mt-2">
+                    <label>New Bookname</label>
+                    <input class="form-control" @bind=bookName placeholder="Enter Book Name">
+                </div>
+                <div class="form-group mt-2">
+                    <label>New Author</label>
+                    <input class="form-control" @bind=author placeholder="Enter Author">
+                </div>
+                <div class="form-group mt-2">
+                    <label>New ISBN</label>
+                    <input class="form-control" @bind=isbn placeholder="Enter ISBN">
+                </div>
+                <p class="mt-2">Leave blank for default</p>
+                <button class="btn btn-primary mt-2 w-100" @onclick=EditBook>Edit Book</button>
+                @if(!updatedbook) {
+                    <p class="text-danger-emphasis">@updateMessage</p>
+                }
+                else{
+                    <p class="text-success">@updateMessage</p>
+                }
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card p-4 mx-auto" style="max-width: 400px;">
+                <h1>Delete Book</h1>
+                <div class="form-group">
+                    <label>Select Book</label>
+                    <select @bind=bookID class="form-select">
+                        <option value="0" disabled selected>Book</option>
+                        @foreach(var book in LibaryService.books){
+                            <option value=@book.Id>@book.Title</option>
+                        }
+                    </select>
+                </div>
+                <button class="btn btn-primary mt-3 w-100" @onclick=DeleteBook>Delete Book</button>
+                @if(!deleteBook) {
+                    <p class="text-danger-emphasis">@deleteMessage</p>
+                }
+                else{
+                    <p class="text-success">@deleteMessage</p>
+                }
+            </div>
+        </div>
+    </div>
+    @foreach(var book in LibaryService.books){
+        <p>@book.Title - @book.Author</p>
+    }
+</div>
+
+@code {
+    public string bookName {get; set;}
+    public string author {get; set;}
+    public string isbn {get; set;}
+    public string createMessage {get; set;}
+    public string updateMessage {get; set;}
+    public string deleteMessage {get; set;}
+    public bool bookCreated {get; set;}
+    public bool updatedbook {get; set;}
+    public bool deleteBook {get; set;}
+    public int bookID {get; set;} = 0;
+    protected override async Task OnInitializedAsync() {
+        await LibaryService.ReadBooks();
+        StateHasChanged();
+    }
+    public async Task CreateBook() {
+        if(string.IsNullOrEmpty(bookName) || string.IsNullOrEmpty(author) || string.IsNullOrEmpty(isbn)) {
+            createMessage = "Error: one or more fields are empty";
+            bookCreated = false;
+            return;
+        }
+        bookCreated = await LibaryService.AddBook(bookName, author, isbn);
+        createMessage = bookCreated ? "User successfully created" : "Error: cannot create user";
+        bookName = "";
+        author = "";
+        isbn = "";
+    }
+    public async Task EditBook() {
+        if(bookID == 0) {
+            updatedbook = false;
+            updateMessage = "Invalid book id";
+            return;
+        }
+        if(string.IsNullOrEmpty(bookName)) {
+            Models.Book book = LibaryService.books.FirstOrDefault(b => b.Id == bookID);
+            bookName = book.Title;
+        }
+        if(string.IsNullOrEmpty(author)) {
+            Models.Book book = LibaryService.books.FirstOrDefault(b => b.Id == bookID);
+            author = book.Author;
+        }
+        if(string.IsNullOrEmpty(author)) {
+            Models.Book book = LibaryService.books.FirstOrDefault(b => b.Id == bookID);
+            isbn = book.ISBN;
+        }
+        updatedbook = await LibaryService.EditBook(bookID, bookName, author, isbn);
+        updateMessage = updatedbook ? "User updated successfully" : "Error: cannot update user";
+        bookName = "";
+        author = "";
+        isbn = "";
+        bookID = 0;
+    }
+    public async Task DeleteBook() {
+        if(bookID == 0) {
+            deleteBook = false;
+            deleteMessage = "Please select a book";
+            return;
+        }
+        deleteBook = await LibaryService.DeleteBook(bookID);
+        deleteMessage = deleteBook ? "book deleted successfully" : "Error: could not delete user";
+        bookID = 0;
+    }
+}

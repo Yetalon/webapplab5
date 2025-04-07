@@ -1,0 +1,34 @@
+@page "/return/{userName}"
+@using webapplab5.Models
+
+@*<div class="row">
+    <div class="col-md-12">
+        <div class="card p-4 mx-auto" style="max-width: 400px;">
+            <h1>Add Book</h1>
+        <div class="form-group">
+            <label>Title</label>
+            <input class="form-control" @bind= placeholder="Enter bookname">
+        </div>
+        <div class="form-group mt-2">
+            <label>Author</label>
+            <input class="form-control" @bind= placeholder="Enter Email">
+        </div>
+        <div class="form-group mt-2">
+            <label>ISBN</label>
+            <input class="form-control" @bind= placeholder="Enter Email">
+        </div>
+        <button class="btn btn-primary mt-3 w-100" @onclick= >Create book</button>
+        @if(!bookCheckedOut) {
+            <p class="text-danger-emphasis">@ </p>
+        }
+        else{
+            <p class="text-success">@createMessage</p>
+        }
+    </div>
+</div>*@
+
+@code {
+    [Parameter]
+    public string userName {get; set;}
+    
+}    

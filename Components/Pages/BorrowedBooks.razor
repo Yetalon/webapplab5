@@ -1,0 +1,57 @@
+@page "/Borrowed"
+@using webapplab5.Services
+@inject LibraryService LibraryService
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card p-4 mx-auto" style="max-width: 400px;">
+            <h1>Check out book</h1>
+                <label>Select Book</label>
+                <select @bind=bookID class="form-select">
+                    <option value="0" disabled selected>Book</option>
+                    @foreach(var book in LibraryService.books){
+                        <option value=@book.Id>@book.Title</option>
+                    }
+                </select>
+                <select @bind=userID class="form-select">
+                    <option value="0" disabled selected>User</option>
+                    @foreach(var user in LibraryService.users){
+                        <option value=@user.Id>@user.Name</option>
+                    }
+                </select>
+            <button class="btn btn-primary mt-3 w-100" @onclick=CheckOut >Create book</button>
+            @if(!bookCheckedOut) {
+                <p class="text-danger-emphasis">@message</p>
+            }
+            else{
+                <p class="text-success">@message</p>
+            }
+        </div>
+    </div>
+</div>
+@foreach(var key in LibraryService.borrowedBooks){
+    foreach(var book in key.Value){
+        <p>@book.Title</p>
+    }
+}
+
+@code {
+    protected override async Task OnInitializedAsync(){
+        await LibraryService.ReadBooks();
+    }
+    public bool bookCheckedOut {get; set;}
+    public string message {get; set;}
+    public int bookID {get; set;}
+    public int userID {get; set;}
+
+    public async Task CheckOut(){
+        if(bookID == 0 || userID == 0) {
+            bookCheckedOut = false;
+            message = "user id or book id is invalid";
+        }
+        bookCheckedOut = await LibraryService.BorrowBook(userID, bookID);
+        message = bookCheckedOut ? "Book has been checked out" : "failed to check out book";
+        bookID = 0;
+        userID = 0;
+    }
+}
