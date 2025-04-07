@@ -19,7 +19,7 @@
                         <option value=@user.Id>@user.Name</option>
                     }
                 </select>
-            <button class="btn btn-primary mt-3 w-100" @onclick=CheckOut >Create book</button>
+            <button class="btn btn-primary mt-3 w-100" @onclick=CheckOut >CheckOut Book</button>
             @if(!bookCheckedOut) {
                 <p class="text-danger-emphasis">@message</p>
             }
@@ -29,6 +29,8 @@
         </div>
     </div>
 </div>
+<h1><a href="/return">Return Book</a></h1>
+<p>@LibraryService.borrowedBooks.Count</p>
 @foreach(var key in LibraryService.borrowedBooks){
     foreach(var book in key.Value){
         <p>@book.Title</p>
@@ -37,7 +39,16 @@
 
 @code {
     protected override async Task OnInitializedAsync(){
-        await LibraryService.ReadBooks();
+        if(LibraryService.books.Count == 0) {
+            await LibraryService.ReadBooks();
+        }
+        if(LibraryService.users.Count == 0) {
+            await LibraryService.ReadUsers();
+        }
+        if(LibraryService.borrowedBooks.Count == 0) {
+            await LibraryService.ReadBorrowedBooksFromCsv();
+        }
+        StateHasChanged();
     }
     public bool bookCheckedOut {get; set;}
     public string message {get; set;}

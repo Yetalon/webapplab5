@@ -92,7 +92,9 @@
     public bool deleteUser {get; set;}
     public int userID {get; set;} = 0;
     protected override async Task OnInitializedAsync() {
-        await LibaryService.ReadUsers();
+        if(LibaryService.users.Count == 0){
+            await LibaryService.ReadUsers();
+        }
         StateHasChanged();
     }
     public async Task CreateUser() {

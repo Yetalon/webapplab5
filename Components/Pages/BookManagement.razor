@@ -101,7 +101,9 @@
     public bool deleteBook {get; set;}
     public int bookID {get; set;} = 0;
     protected override async Task OnInitializedAsync() {
-        await LibaryService.ReadBooks();
+        if(LibaryService.books.Count == 0) {
+            await LibaryService.ReadBooks();
+        }
         StateHasChanged();
     }
     public async Task CreateBook() {
