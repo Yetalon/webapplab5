@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("webapplab5")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+06a8e2c054987acf61aa1482e47ee07d6bbf6b62")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9e5fa6d3f592ed994e6d00f045de796971a9f30a")]
 [assembly: System.Reflection.AssemblyProductAttribute("webapplab5")]
 [assembly: System.Reflection.AssemblyTitleAttribute("webapplab5")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
