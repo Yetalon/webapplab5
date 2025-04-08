@@ -207,86 +207,87 @@ namespace webapplab5.Services
             return borrowedBooks;
         }
 
-       public async Task ReadBorrowedBooksFromCsv()
-{
-    try
-    {
-        borrowedBooks.Clear();
-        var lines = File.ReadLines("./Data/Borrowed.csv").ToList();
-        User currentUser = null;
-        List<Book> currentBooks = new();
-
-        foreach (var line in lines)
+        public async Task ReadBorrowedBooksFromCsv()
         {
-            var fields = line.Split(',');
-
-            if (fields.Length == 3)
+            try
             {
+                borrowedBooks.Clear();
+                var lines = File.ReadLines("./Data/Borrowed.csv").ToList();
+                User currentUser = null;
+                List<Book> currentBooks = new();
+
+                foreach (var line in lines)
+                {
+                    var fields = line.Split(',');
+
+                    if (fields.Length == 3)
+                    {
+                        if (currentUser != null && currentBooks.Count > 0)
+                        {
+                            Console.WriteLine($"Saving books for user: {currentUser.Name}");
+                            borrowedBooks[currentUser] = currentBooks;
+                        }
+
+                        int userId = int.Parse(fields[0]);
+                        currentUser = users.FirstOrDefault(u => u.Id == userId);
+                        Console.WriteLine($"Reading user: {userId} -> {(currentUser?.Name ?? "null")}");
+                        currentBooks = new List<Book>();
+                    }
+                    else if (fields.Length == 5 && currentUser != null)
+                    {
+                        var book = new Book
+                        {
+                            Id = int.Parse(fields[1]),
+                            Title = fields[2],
+                            Author = fields[3],
+                            ISBN = fields[4]
+                        };
+
+                        currentBooks.Add(book);
+                    }
+                }
+
+                // Add the last user and their books
                 if (currentUser != null && currentBooks.Count > 0)
                 {
-                    Console.WriteLine($"Saving books for user: {currentUser.Name}");
+                    Console.WriteLine($"Saving last batch of books for user: {currentUser.Name}");
                     borrowedBooks[currentUser] = currentBooks;
                 }
 
-                int userId = int.Parse(fields[0]);
-                currentUser = users.FirstOrDefault(u => u.Id == userId);
-                Console.WriteLine($"Reading user: {userId} -> {(currentUser?.Name ?? "null")}");
-                currentBooks = new List<Book>();
+                Console.WriteLine($"Finished loading borrowed books: {borrowedBooks.Count} entries");
             }
-            else if (fields.Length == 5 && currentUser != null)
+            catch (Exception ex)
             {
-                var book = new Book
-                {
-                    Id = int.Parse(fields[1]),
-                    Title = fields[2],
-                    Author = fields[3],
-                    ISBN = fields[4]
-                };
-
-                currentBooks.Add(book);
+                Console.WriteLine($"An error occurred: {ex.Message}");
             }
         }
 
-        // Add the last user and their books
-        if (currentUser != null && currentBooks.Count > 0)
+
+        public async Task WriteBorrowedBooksToCsv()
         {
-            Console.WriteLine($"Saving last batch of books for user: {currentUser.Name}");
-            borrowedBooks[currentUser] = currentBooks;
+            // Prepare the lines for writing
+            var lines = new List<string>();
+
+            foreach (var borrowed in borrowedBooks)
+            {
+                var user = borrowed.Key;
+                var books = borrowed.Value;
+
+                if (books.Count != 0)
+                {
+                    lines.Add($"{user.Id},{user.Name},{user.Email}");
+
+                    foreach (var book in books)
+                    {
+                        lines.Add($"{user.Id},{book.Id},{book.Title},{book.Author},{book.ISBN}");
+                    }
+                }
+            }
+
+            // Write all lines to the CSV file
+            File.WriteAllLines("./Data/Borrowed.csv", lines);
         }
 
-        Console.WriteLine($"Finished loading borrowed books: {borrowedBooks.Count} entries");
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine($"An error occurred: {ex.Message}");
-    }
-}
- 
-
-       public async Task WriteBorrowedBooksToCsv()
-{
-    // Prepare the lines for writing
-    var lines = new List<string>();
-
-    foreach (var borrowed in borrowedBooks)
-    {
-        var user = borrowed.Key;
-        var books = borrowed.Value;
-
-        if(books.Count != 0) {
-        lines.Add($"{user.Id},{user.Name},{user.Email}");
-
-        foreach (var book in books)
-        {
-            lines.Add($"{user.Id},{book.Id},{book.Title},{book.Author},{book.ISBN}");
-        }
-        }
-    }
-
-    // Write all lines to the CSV file
-    File.WriteAllLines("./Data/Borrowed.csv", lines);
-}
- 
 
     }
 }
